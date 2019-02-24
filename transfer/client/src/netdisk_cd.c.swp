@@ -1,0 +1,47 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <string.h>
+#include <stdint.h>
+#include <dirent.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+
+#include "zlog.h"
+#include "netdisk.h"
+
+int32_t netdisk_cd(cmd_info_t *cmd_info_ptr, zlog_category_t *zlog_handle)
+{
+	DIR *pdir;
+	char name[FILENAME_LEN];
+	char path[FILENAME_LEN];
+
+	if (cmd_info_ptr == NULL || zlog_handle == NULL)
+	{
+		zlog_error(zlog_handle, "invalid argument");
+		return -1;
+	}
+
+	memset(path, 0, FILENAME_LEN);
+	sprintf(path, "../%s/", user_info.username);
+	strncat(path, cmd_info_ptr->second, strlen(cmd_info_ptr->second));
+	pdir = opendir(path);
+	if (pdir == NULL)
+	{
+		perror("");
+		zlog_error(zlog_handle, "opendir() error");
+		return -1;
+	}
+
+	memset(g_path, 0, GLOBAL_DIR_PATH);
+	memset(name, 0, FILENAME_LEN);
+	sprintf(name, "%s", user_info.username);
+	memcpy(g_path, name, strlen(name));
+	g_path[strlen(g_path)] = '/';
+	strncat(g_path, cmd_info_ptr->second, strlen(cmd_info_ptr->second));
+
+	return 0;
+}
